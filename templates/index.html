@@ -1,0 +1,89 @@
+<html>
+<style>
+    .cont {
+        border: solid;
+        width: 40%;
+        float left;
+        margin-bottom: 10px;
+    }
+
+    .fl {
+        width: 40%;
+        border: solid;
+    }
+</style>
+
+<body>
+    <div class="cont">
+        名前: <input type="text" id="name">
+        <br />
+        内容: <input type="text" id="content">
+        <br />
+        <button id="submit">送信</button>
+    </div>
+    <div class="cont">
+        id: <input type="text" id="delete_id">
+        <br />
+        <button id="delete">削除</button>
+    </div>
+    <div class="cont">
+        id: <input type="text" id="put_id">
+        <br />
+        内容: <input type="text" id="put_content">
+        <br />
+        <button id="patch">置き換え</button>
+    </div>
+    <br>
+    <div id="contents"></div>
+    <script>
+        document.getElementById("submit").onclick = () => {
+            const name = document.getElementById("name")
+            const content = document.getElementById("content")
+            const method = "POST"
+            const headers = {
+                'Content-Type': 'application/json'
+            }
+            const body = JSON.stringify({
+                name: name.value,
+                content: content.value
+            })
+            fetch("/data", { method, headers, body })
+        }
+
+        document.getElementById("delete").onclick = () => {
+            const id = document.getElementById("delete_id")
+            const method = "DELETE"
+            fetch("/data?id=" + id.value, { method })
+        }
+
+        document.getElementById("patch").onclick = () => {
+            const id = document.getElementById("put_id")
+            const content = document.getElementById("put_content")
+            const method = "PATCH"
+            const headers = {
+                'Content-Type': 'application/json'
+            }
+            const body = JSON.stringify({
+                content: content.value
+            })
+            fetch("/data?id="+id.value, { method, headers, body })
+        }
+
+        setInterval(() => {
+            const contents = document.getElementById("contents")
+            fetch("/data").then((res) => res.json()).then((json) => {
+                contents.innerHTML = ""
+                json.forEach((v) => {
+                    contents.innerHTML += `<div class='cont'>
+                            id:${v.id}
+                            <br/>
+                            名前: ${v.name}
+                            <br/>
+                            ${v.content}</div>`
+                });
+            })
+        }, 1000)
+    </script>
+</body>
+
+</html>
