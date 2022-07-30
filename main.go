@@ -10,7 +10,7 @@ import (
 
 type Data struct {
 	Id        int       `json:"id"`
-	Name      string    `json:"name" binding:"required"`
+	Name      string    `json:"name"`
 	TimeStamp time.Time `json:"timestamp"`
 	Content   string    `json:"content"  binding:"required"`
 }
@@ -27,6 +27,7 @@ func main() {
 	r.POST("/data", setData)
 	r.GET("/data", getData)
 	r.DELETE("/data", deleteData)
+	r.PATCH("/data", changeData)
 	r.Run(":8080")
 }
 func index(c *gin.Context) {
@@ -83,6 +84,36 @@ func deleteData(c *gin.Context) {
 		if v.Id == id {
 			// i番目のデータを削除
 			datas = append(datas[:i], datas[i+1:]...)
+			flg = true
+			break
+		}
+	}
+	if !flg {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	c.Status(http.StatusOK)
+}
+func changeData(c *gin.Context) {
+	idstr := c.Query("id")
+	id, err := strconv.Atoi(idstr)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	var d Data
+	if err := c.BindJSON(&d); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	flg := false
+	for i, v := range datas {
+		if v.Id == id {
+			// i番目のデータを変更
+			datas[i].Content = d.Content
+			datas[i].TimeStamp = time.Now()
 			flg = true
 			break
 		}
